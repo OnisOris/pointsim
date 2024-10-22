@@ -1,8 +1,3 @@
-# pointsim
-Проект создан для симуляции материальной точки для тестирования ПИД регуляторов и их коэффициентов.
-
-# Пример
-```python
 from pointsim import PIDController, Point
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,4 +21,4 @@ stabilization_simulator = StabilizationSimulator("PIDStabilizationSim", point, d
 
 # Запускаем анимацию стабилизации с графиками
 stabilization_simulator.animate()
-```
+
