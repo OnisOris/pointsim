@@ -1,4 +1,3 @@
-import numpy as np
 import matplotlib
 from pointsim import StabilizationSimulator3D
 

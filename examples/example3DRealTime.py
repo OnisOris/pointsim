@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-from pointsim import StabilizationSimulator3D, StabilizationSimulator3DRealTime
+from pointsim import StabilizationSimulator3DRealTime
 
 matplotlib.use('Qt5Agg')
 
