@@ -206,8 +206,8 @@ class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
         anim = FuncAnimation(fig, update, interval=100, cache_frame_data=False)
         plt.show()
 class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
-    def init(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
-        super().init(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
+    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
+        super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
         self.external_control_signal = np.array([0.0, 0.0, 0.0], dtype=np.float64)
 
     def receive_external_signal(self, control_signal):
@@ -216,7 +216,7 @@ class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
         Например, этот метод можно использовать для получения команды из внешнего источника (сети, сенсора, и т.д.).
         control_signal: np.array([x, y, z]) — вектор управления.
         """
-        self.external_control_signal = np.clip(control_signal, -self.max_acceleration, self.max_acceleration)
+        self.external_control_signal = control_signal
 
     def step(self):
         # Получаем текущую позицию и вычисляем сигнал управления с PID
