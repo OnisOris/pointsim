@@ -6,6 +6,15 @@ def readme():
     with open('README.md', 'r', encoding='utf-8') as f:
         return f.read()
 
+# Cython-модуль, который нужно скомпилировать
+extensions = [
+    Extension(
+        "pointsim.cython_pid",
+        ["pointsim/cython_pid.pyx"],
+        include_dirs=[np.get_include()]
+    ),
+]
+
 setup(
     name='pointsim',
     version='0.0.1',
@@ -17,7 +26,8 @@ setup(
     url='https://github.com/OnisOris/pointsim',
     packages=find_packages(),
     ext_modules=cythonize(extensions),  # Компиляция Cython
-    install_requires=['numpy', 'matplotlib', 'PyQt5', 'cython'],
+    install_requires=['numpy', 'matplotlib', 'PyQt5'],
+    setup_requires=['cython', 'numpy'],  # Добавляем Cython и numpy в зависимости для сборки
     classifiers=[
         'Programming Language :: Python :: 3.12',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
@@ -29,11 +39,3 @@ setup(
     },
     python_requires='>=3.9'
 )
-# Cython-модуль, который нужно скомпилировать
-extensions = [
-    Extension(
-        "pointsim.cython_pid",
-        ["pointsim/cython_pid.pyx"],
-        include_dirs=[np.get_include()]
-    ),
-]
