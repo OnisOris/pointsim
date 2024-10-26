@@ -1,8 +1,8 @@
-from pointsim import PIDController, Point
+import matplotlib
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from pointsim import PIDController, Point
 from pointsim import StabilizationSimulator
+matplotlib.use('Qt5Agg')
 
 # Инициализируем PID-контроллер с коэффициентами
 kp = [6.103582235784548, 6.103582235784548]
