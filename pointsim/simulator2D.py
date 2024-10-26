@@ -5,11 +5,12 @@ from .controller import PIDController
 import time
 from typing import Union
 
-class Simulator:
-    def __init__(self, 
-                 name: str, 
-                 simulation_object: 'Point', 
-                 dt: float, 
+
+class Simulator2D:
+    def __init__(self,
+                 name: str,
+                 simulation_object: 'Point2D',
+                 dt: float,
                  force: np.ndarray):
         """
         Инициализация симулятора.
@@ -71,11 +72,13 @@ class Simulator:
 
         # Показываем анимацию
         plt.show()
-class StabilizationSimulator(Simulator):
-    def __init__(self, 
-                 name: str, 
-                 simulation_object: 'Point', 
-                 dt: float, 
+
+
+class StabilizationSimulator2D(Simulator2D):
+    def __init__(self,
+                 name: str,
+                 simulation_object: 'Point',
+                 dt: float,
                  pid_controller: PIDController):
         """
         Инициализация симулятора стабилизации с ПИД-регулятором.
@@ -88,7 +91,7 @@ class StabilizationSimulator(Simulator):
         :type dt: float
         :param pid_controller: PID-регулятор для управления положением.
         :type pid_controller: PIDController
-        """        
+        """
         super().__init__(name, simulation_object, dt, np.zeros(2))  # Инициализируем симулятор без внешней силы
         self.pid_controller = pid_controller  # PID-регулятор для управления точкой
         self.time_data = []  # Время
@@ -104,7 +107,7 @@ class StabilizationSimulator(Simulator):
         Один шаг симуляции для стабилизации в центре.
 
         :return: None
-        """   
+        """
         # Рассчитываем управляющее воздействие с помощью PID-регулятора
         control_signal = self.pid_controller.compute_control(
             target_position=np.array([0.0, 0.0]),  # Центр как целевая позиция
@@ -131,13 +134,13 @@ class StabilizationSimulator(Simulator):
         self.simulation_object.position = self.initial_position.copy()
         self.simulation_object.speed = self.initial_speed.copy()
 
-    def update(self, 
-               frame: int, 
-               scatter: plt.scatter, 
-               x_line: plt.Line2D, 
-               y_line: plt.Line2D, 
-               time_text: plt.Text, 
-               ax_x: plt.Axes, 
+    def update(self,
+               frame: int,
+               scatter: plt.scatter,
+               x_line: plt.Line2D,
+               y_line: plt.Line2D,
+               time_text: plt.Text,
+               ax_x: plt.Axes,
                ax_y: plt.Axes) -> tuple:
         """
         Обновление графики для каждой итерации симуляции.
@@ -158,7 +161,7 @@ class StabilizationSimulator(Simulator):
         :type ax_y: plt.Axes
         :return: Обновленные объекты графики.
         :rtype: tuple
-        """        
+        """
         self.step()  # Выполняем шаг симуляции
 
         # Обновляем положение точки на графике
@@ -191,7 +194,8 @@ class StabilizationSimulator(Simulator):
         # Настраиваем основной график для отображения позиции
         ax_main.set_xlim(-10, 10)
         ax_main.set_ylim(-10, 10)
-        scatter = ax_main.scatter(self.simulation_object.position[0], self.simulation_object.position[1], s=100, color='red')
+        scatter = ax_main.scatter(self.simulation_object.position[0], self.simulation_object.position[1], s=100,
+                                  color='red')
         ax_main.set_title("Position of the Point")
         ax_main.axhline(0, color='grey', lw=1)  # Линия целевой позиции по оси y
         ax_main.axvline(0, color='grey', lw=1)  # Линия целевой позиции по оси x
@@ -226,10 +230,11 @@ class StabilizationSimulator(Simulator):
         plt.tight_layout()
         plt.show()
 
-class Point:
-    def __init__(self, 
-                 mass: Union[float, int], 
-                 position: np.ndarray, 
+
+class Point2D:
+    def __init__(self,
+                 mass: Union[float, int],
+                 position: np.ndarray,
                  speed: np.ndarray):
         """
         Инициализация точки в симуляции.
@@ -259,9 +264,5 @@ class Point:
         # Обновление скорости
         self.speed = self.speed + acceleration * dt
         # Обновление позиции
-        self.position = self.position + self.speed * dt + 0.5 * acceleration * dt**2
+        self.position = self.position + self.speed * dt + 0.5 * acceleration * dt ** 2
         return self.position
-
-
-
-
