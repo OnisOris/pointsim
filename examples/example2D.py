@@ -1,14 +1,17 @@
 import matplotlib
 import numpy as np
-from pointsim import PIDController, Point2D
-from pointsim import StabilizationSimulator2D
+from pointsim.cython_pid import PIDController
+from pointsim import StabilizationSimulator2D,  Point2D
 matplotlib.use('Qt5Agg')
 
 # Инициализируем PID-контроллер с коэффициентами
 kp = [6.103582235784548, 6.103582235784548]
 ki = [0, 0]
 kd = [5.898832824054038, 5.898832824054038]
-pid_controller = PIDController(kp, ki, kd)
+# pid_controller = PIDController(kp, ki, kd)
+pid_controller = PIDController(np.array(kp, dtype=np.float64),
+                                    np.array(ki, dtype=np.float64),
+                                    np.array(kd, dtype=np.float64))
 
 # Инициализируем точку
 mass = 1.0
