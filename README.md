@@ -3,10 +3,10 @@
 
 # Установка
 ```
-python setup.py build_ext --inplace
+pip install git+https://github.com/OnisOris/pointsim
 ```
 # Примеры
-
+## 2D симуляция
 ```python
 import matplotlib
 import numpy as np
@@ -35,6 +35,9 @@ stabilization_simulator = StabilizationSimulator2D("PIDStabilizationSim", point,
 # Запускаем анимацию стабилизации с графиками
 stabilization_simulator.animate()
 ```
+![alt text](./img/Figure_1.png)
+
+## 3D симуляция
 
 ```python
 import matplotlib
@@ -58,7 +61,9 @@ if __name__ == "__main__":
 
     simulator.run_simulation(steps=1000)
 ```
+![alt text](./img/Figure_2.png)
 
+## 3D симуляция в реальном времени
 ```python
 import numpy as np
 import matplotlib
