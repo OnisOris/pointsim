@@ -3,6 +3,8 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 from pointsim.cython_pid import PIDController  # Cython-версия PIDController
 import time
+
+
 class Point3D:
     def __init__(self, mass, position, speed):
         self.mass = mass
@@ -26,10 +28,11 @@ class Point3D:
         self.speed += (k1v + 2 * k2v + 2 * k3v + k4v) / 6
         self.position += (k1x + 2 * k2x + 2 * k3x + k4x) / 6
 
-class StabilizationSimulator3D:
-    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
+
+class Simulator3D:
+    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1):
         self.name = name
-        self.dt = dt
+        self.dt = dt  # Временной шаг для симуляции
         self.simulation_object = Point3D(mass, position, speed)
         self.pid_controller = PIDController(np.array(kp, dtype=np.float64),
                                             np.array(ki, dtype=np.float64),
@@ -37,6 +40,74 @@ class StabilizationSimulator3D:
         self.time_data, self.x_data, self.y_data, self.z_data = [], [], [], []
         self.max_acceleration = max_acceleration
         self.simulation_time = 0  # Инициализируем симулированное время
+        self.external_control_signal = np.array([0.0, 0.0, 0.0], dtype=np.float64)
+
+    def receive_external_signal(self, control_signal):
+        """
+        Метод для получения внешнего управляющего сигнала.
+        Например, этот метод можно использовать для получения команды из внешнего источника (сети, сенсора, и т.д.).
+        control_signal: np.array([x, y, z]) — вектор управления.
+        """
+        self.external_control_signal = control_signal
+
+    def step(self):
+        # Получаем текущую позицию и вычисляем сигнал управления с PID
+        target_position = np.array([0.0, 0.0, 0.0], dtype=np.float64)
+        pid_control_signal = self.pid_controller.compute_control(
+            target_position=target_position,
+            current_position=self.simulation_object.position,
+            dt=self.dt
+        )
+
+        # Добавляем внешнее управление
+        total_control_signal = np.clip(pid_control_signal + self.external_control_signal,
+                                       -self.max_acceleration, self.max_acceleration)
+
+        # Вычисляем ускорение
+        acceleration = total_control_signal / self.simulation_object.mass
+        self.simulation_object.rk4_step(acceleration, self.dt)
+
+        # Обновляем симулированное время и сохраняем данные для анализа
+        self.simulation_time += self.dt
+        self.time_data.append(self.simulation_time)
+        self.x_data.append(self.simulation_object.position[0])
+        self.y_data.append(self.simulation_object.position[1])
+        self.z_data.append(self.simulation_object.position[2])
+
+    def run_simulation(self, steps):
+        """
+        Запуск симуляции без визуализации. Просто выполняем шаги симуляции.
+        """
+        for _ in range(steps):
+            self.step()
+
+
+class Simulator3DRealTime(Simulator3D):
+    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1):
+        # Инициализируем базовый класс
+        super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration)
+
+    def run_real_time_simulation(self):
+        """
+        Запуск симуляции в реальном времени. Шаг симуляции синхронизируется с реальным временем.
+        """
+        last_time = time.time()
+        while True:
+            current_time = time.time()
+            elapsed_time = current_time - last_time
+
+            # Проверяем, прошло ли достаточно времени для очередного шага
+            if elapsed_time >= self.dt:
+                self.step()
+                last_time = current_time
+
+            time.sleep(0.01)  # Немного ждем, чтобы избежать слишком частых проверок
+            print(f"Position: {self.simulation_object.position}, Time: {self.simulation_time}")
+
+
+class StabilizationSimulator3D(Simulator3D):
+    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
+        super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration)
         self.show_trajectory = show_trajectory  # Опция для отображения траектории
 
     def step(self):
@@ -108,6 +179,7 @@ class StabilizationSimulator3D:
             self.step()
         self.animate()
 
+
 class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
     def init(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
         super().init(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
@@ -175,7 +247,7 @@ class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
         # Если включено отображение траектории, инициализируем линию
         if self.show_trajectory:
             trajectory_line, = ax.plot([], [], [], color='blue', lw=2)
-# Создаем текст для отображения координат над точкой
+        # Создаем текст для отображения координат над точкой
         coord_text = ax.text(initial_position[0], initial_position[1], initial_position[2] + 1,
                              f"({initial_position[0]:.2f}, {initial_position[1]:.2f}, {initial_position[2]:.2f})",
                              color='blue')
@@ -205,6 +277,7 @@ class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
 
         anim = FuncAnimation(fig, update, interval=100, cache_frame_data=False)
         plt.show()
+
 class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
     def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
         super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
