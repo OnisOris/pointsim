@@ -93,5 +93,5 @@ if __name__ == "__main__":
     # Запуск симуляции с анимацией
     simulator.animate_real_time()
 ```
-
+![alt text](./img/Figure_3.png)
 
