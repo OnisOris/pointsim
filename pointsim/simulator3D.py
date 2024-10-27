@@ -7,7 +7,8 @@ from typing import List, Union
 
 
 class Point3D:
-    def __init__(self, mass: float, position: Union[List[float], np.ndarray], speed: Union[List[float], np.ndarray]) -> None:
+    def __init__(self, mass: float, position: Union[List[float], np.ndarray],
+                 speed: Union[List[float], np.ndarray]) -> None:
         """
         Инициализация объекта Point3D.
 
@@ -44,8 +45,8 @@ class Point3D:
 
 
 class Simulator3D:
-    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray], 
-                 speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float], 
+    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray],
+                 speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float],
                  dt: float, max_acceleration: float = 1) -> None:
         self.name = name
         self.dt = dt  # Временной шаг для симуляции
@@ -98,15 +99,15 @@ class Simulator3D:
         Запуск симуляции на определенное количество шагов.
 
         :param steps: Количество шагов симуляции.
-        """ 
+        """
         for _ in range(steps):
             self.step()
 
 
 class Simulator3DRealTime(Simulator3D):
-    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray], 
-                speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float], 
-                dt: float, max_acceleration: float = 1) -> None:
+    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray],
+                 speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float],
+                 dt: float, max_acceleration: float = 1) -> None:
         """
         Инициализация симулятора для работы в реальном времени.
 
@@ -142,11 +143,16 @@ class Simulator3DRealTime(Simulator3D):
 
 
 class StabilizationSimulator3D(Simulator3D):
-    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
+    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray],
+                 speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float],
+                 dt: float, max_acceleration: float = 1, show_trajectory: bool = False):
         super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration)
         self.show_trajectory = show_trajectory  # Опция для отображения траектории
 
-    def step(self):
+    def step(self) -> None:
+        """
+        Выполняет один шаг симуляции, обновляя позицию и скорость объекта.
+        """
         target_position = np.array([0.0, 0.0, 0.0], dtype=np.float64)
         control_signal = np.clip(self.pid_controller.compute_control(
             target_position=target_position,
@@ -163,7 +169,7 @@ class StabilizationSimulator3D(Simulator3D):
         self.y_data.append(self.simulation_object.position[1])
         self.z_data.append(self.simulation_object.position[2])
 
-    def animate(self):
+    def animate(self) -> None:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_xlim(-10, 10)
@@ -187,7 +193,7 @@ class StabilizationSimulator3D(Simulator3D):
         time_text = ax.text2D(0.95, 0.95, f"Time: 0.00 s", transform=ax.transAxes, color='black',
                               ha='right', va='top')
 
-        def update(frame):
+        def update(frame) -> None:
             self.step()
             x, y, z = self.simulation_object.position
             scatter._offsets3d = (np.array([x]), np.array([y]), np.array([z]))
@@ -217,7 +223,9 @@ class StabilizationSimulator3D(Simulator3D):
 
 
 class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
-    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
+    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray],
+                 speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float],
+                 dt: float, max_acceleration: float = 1, show_trajectory: bool = False):
         super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
         self.external_control_signal = np.array([0.0, 0.0, 0.0], dtype=np.float64)
 
@@ -313,6 +321,7 @@ class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
 
         anim = FuncAnimation(fig, update, interval=100, cache_frame_data=False)
         plt.show()
+
 
 class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
     def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
