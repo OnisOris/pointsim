@@ -3,16 +3,30 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 from pointsim.cython_pid import PIDController  # Cython-версия PIDController
 import time
+from typing import List, Union
 
 
 class Point3D:
-    def __init__(self, mass, position, speed):
+    def __init__(self, mass: float, position: Union[List[float], np.ndarray], speed: Union[List[float], np.ndarray]) -> None:
+        """
+        Инициализация объекта Point3D.
+
+        :param mass: Масса объекта.
+        :param position: Начальная позиция объекта в пространстве [x, y, z].
+        :param speed: Начальная скорость объекта [vx, vy, vz].
+        """
         self.mass = mass
         self.initial_position = np.array(position, dtype=np.float64)
         self.position = np.array(position, dtype=np.float64)
         self.speed = np.array(speed, dtype=np.float64)
 
-    def rk4_step(self, acceleration, dt):
+    def rk4_step(self, acceleration: np.ndarray, dt: float) -> None:
+        """
+        Шаг симуляции с использованием метода Рунге-Кутты 4-го порядка.
+
+        :param acceleration: Вектор ускорения.
+        :param dt: Временной шаг.
+        """
         k1v = acceleration * dt
         k1x = self.speed * dt
 
@@ -30,7 +44,9 @@ class Point3D:
 
 
 class Simulator3D:
-    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1):
+    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray], 
+                 speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float], 
+                 dt: float, max_acceleration: float = 1) -> None:
         self.name = name
         self.dt = dt  # Временной шаг для симуляции
         self.simulation_object = Point3D(mass, position, speed)
@@ -51,6 +67,9 @@ class Simulator3D:
         self.external_control_signal = control_signal
 
     def step(self):
+        """
+        Выполняет один шаг симуляции, обновляя позицию и скорость объекта.
+        """
         # Получаем текущую позицию и вычисляем сигнал управления с PID
         target_position = np.array([0.0, 0.0, 0.0], dtype=np.float64)
         pid_control_signal = self.pid_controller.compute_control(
@@ -74,16 +93,33 @@ class Simulator3D:
         self.y_data.append(self.simulation_object.position[1])
         self.z_data.append(self.simulation_object.position[2])
 
-    def run_simulation(self, steps):
+    def run_simulation(self, steps: int):
         """
-        Запуск симуляции без визуализации. Просто выполняем шаги симуляции.
-        """
+        Запуск симуляции на определенное количество шагов.
+
+        :param steps: Количество шагов симуляции.
+        """ 
         for _ in range(steps):
             self.step()
 
 
 class Simulator3DRealTime(Simulator3D):
-    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1):
+    def __init__(self, name: str, mass: float, position: Union[List[float], np.ndarray], 
+                speed: Union[List[float], np.ndarray], kp: List[float], ki: List[float], kd: List[float], 
+                dt: float, max_acceleration: float = 1) -> None:
+        """
+        Инициализация симулятора для работы в реальном времени.
+
+        :param name: Имя симуляции.
+        :param mass: Масса объекта.
+        :param position: Начальная позиция объекта.
+        :param speed: Начальная скорость объекта.
+        :param kp: Пропорциональные коэффициенты PID-контроллера.
+        :param ki: Интегральные коэффициенты PID-контроллера.
+        :param kd: Дифференциальные коэффициенты PID-контроллера.
+        :param dt: Временной шаг.
+        :param max_acceleration: Максимальное ускорение.
+        """
         # Инициализируем базовый класс
         super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration)
 
@@ -181,8 +217,8 @@ class StabilizationSimulator3D(Simulator3D):
 
 
 class StabilizationSimulator3DRealTime(StabilizationSimulator3D):
-    def init(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
-        super().init(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
+    def __init__(self, name, mass, position, speed, kp, ki, kd, dt, max_acceleration=1, show_trajectory=False):
+        super().__init__(name, mass, position, speed, kp, ki, kd, dt, max_acceleration, show_trajectory)
         self.external_control_signal = np.array([0.0, 0.0, 0.0], dtype=np.float64)
 
     def receive_external_signal(self, control_signal):
